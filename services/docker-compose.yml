@@ -1,0 +1,78 @@
+version: "3.8"
+
+# volumes: # volumenes para persistir los datos de EMQX rebautizados. Esto es para que no se pierdan los datos al reiniciar el contenedor
+#   vol-emqx-data:
+#     name: foo-emqx-data
+#   vol-emqx-etc:
+#     name: foo-emqx-etc
+#   vol-emqx-log:
+#     name: foo-emqx-log
+
+
+
+services:
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.4
+    restart: always
+    environment: # Variables de entorno del contenedor. Esto sirve para configurar MongoDB desde el docker-compose y no desde el archivo de configuración de MongoDB
+      TZ: "America/Asuncion"
+      MONGO_INITDB_ROOT_USERNAME: "mypharmadb"
+      MONGO_INITDB_ROOT_PASSWORD: "s3rv3r_t3s1s"
+      #- MONGO_INITDB_DATABASE: " mypharmamanager
+    volumes: # Volumenes para persistir los datos de MongoDB
+      - ./mongodata:/data/db
+    ports:
+      - 27017:27017 #Puerto de MongoDB
+
+
+# _________________________________________________________________________________________________________________________
+  emqx:
+    container_name: emqx
+    image: emqx:latest 
+    restart: always
+    ports:
+      - 18083:18083 #Dashboard de EMQX 
+      - 8081:8081 
+      # - 1500:18084 #Dashboard de EMQX SECURE
+      - 1883:1883 #MQTT
+      #- 2500:8883 #MQTT SECURE
+      - 8083:8083 #MQTT para WebSockets (el inseguro)
+      # - 3500:8084 #MQTT para WebSockets (el seguro)
+    links:
+      - mongo
+    extra_hosts:
+      - "localhost:TU_IP_LOCAL" # Cambiar TU_IP_LOCAL por la IP local de tu máquina
+
+    # volumes: # Volumenes para persistir los datos de EMQX
+    #   - vol-emqx-data:/opt/emqx/data
+    #   - vol-emqx-etc:/opt/emqx/etc
+    #   - vol-emqx-log:/opt/emqx/log
+
+    environment: # Variables de entorno del contenedor. Esto sirve para configurar EMQX desde el docker-compose y no desde el archivo de configuración de EMQX
+      - "EMQX_LISTENERS__TCP__DEFAULT__MAX_CONNECTIONS= 1000"
+      - "EMQX_NAME=mypharmamanager"
+      - "EMQX_HOST= 127.0.0.1"
+      - "TZ= America/Asuncion"
+
+
+      # Default dashboard password:
+      - "EMQX_DASHBOARD__DEFAULT_PASSWORD=s3rv3r_t3s1s"
+
+ 
+
+      - "EMQX_LOADED_PLUGINS=emqx_recon,emqx_retainer,emqx_management,emqx_dashboard"
+
+
+
+      
+
+
+
+
+
+
+
+
+      
